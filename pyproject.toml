@@ -1,0 +1,109 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "sentinelx-ai"
+version = "1.0.0"
+description = "SentinelX AI — Autonomous Cyber Investigation Officer"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "SentinelX AI Team" }]
+keywords = ["cybersecurity", "ai", "soc", "fastapi", "langgraph"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Information Technology",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*", "databases*", "graph_db*", "vector_db*", "security*"]
+
+# =============================================================================
+# Ruff — Linting & Formatting
+# =============================================================================
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+indent-width = 4
+exclude = [
+    ".git", "__pycache__", ".venv", "venv",
+    "databases/migrations/versions",
+    "frontend",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ANN", # flake8-annotations
+    "S",   # flake8-bandit (security)
+    "N",   # pep8-naming
+]
+ignore = [
+    "ANN101", # Missing type for self
+    "ANN102", # Missing type for cls
+    "S104",   # Binding to all interfaces (needed for Docker)
+    "B008",   # Function calls in default arguments (FastAPI Depends pattern)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["backend", "databases", "graph_db", "vector_db"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+# =============================================================================
+# MyPy — Static Type Checking
+# =============================================================================
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = ["databases/migrations", "frontend", "tests"]
+
+# =============================================================================
+# Pytest
+# =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+log_cli = true
+log_cli_level = "INFO"
+
+# =============================================================================
+# Coverage
+# =============================================================================
+[tool.coverage.run]
+source = ["backend", "databases", "graph_db", "vector_db"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
