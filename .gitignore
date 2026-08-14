@@ -139,3 +139,23 @@ databases/migrations/__pycache__/
 .terraform/
 terraform.tfstate
 terraform.tfstate.backup
+
+# =============================================================================
+# Phase 3 — Knowledge Intelligence Layer
+# =============================================================================
+
+# Raw knowledge documents (not versioned — drop PDFs/JSONs into data/knowledge/raw/)
+data/knowledge/raw/**
+data/knowledge/processed/**
+data/knowledge/failed/**
+
+# Preserve directory structure via .gitkeep
+!data/knowledge/raw/**/.gitkeep
+!data/knowledge/processed/.gitkeep
+!data/knowledge/failed/.gitkeep
+
+# Model cache (BAAI/bge-large-en-v1.5 ~1.3 GB — downloaded at first startup)
+# Maps to the sentinelx_models Docker volume at runtime
+.models_cache/
+models/
+

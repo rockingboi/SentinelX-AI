@@ -82,6 +82,38 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: str = ""
 
     # -------------------------------------------------------------------------
+    # Phase 3 — Knowledge Intelligence Layer
+    # -------------------------------------------------------------------------
+    # Qdrant collection for cybersecurity knowledge documents
+    QDRANT_KNOWLEDGE_COLLECTION: str = "sentinelx_knowledge"
+
+    # Local embedding model (downloaded to EMBEDDING_MODEL_CACHE_DIR at first startup)
+    # MUST be a sentence-transformers compatible model.
+    # Changing this after first startup requires manually deleting the Qdrant collection.
+    EMBEDDING_MODEL: str = "BAAI/bge-large-en-v1.5"
+    EMBEDDING_DIM: int = 1024          # BAAI/bge-large-en-v1.5 output dimension
+    EMBEDDING_MODEL_CACHE_DIR: str = "/models"  # Docker volume: sentinelx_models
+
+    # Chunking parameters (applied by SentenceSplitter)
+    KNOWLEDGE_CHUNK_SIZE: int = 512    # tokens per chunk
+    KNOWLEDGE_CHUNK_OVERLAP: int = 64  # token overlap between consecutive chunks
+
+    # Retrieval parameters
+    KNOWLEDGE_TOP_K: int = 10           # final results returned after RRF fusion
+    KNOWLEDGE_DENSE_TOP_K: int = 30     # dense candidates fetched from Qdrant before fusion
+    KNOWLEDGE_SPARSE_TOP_K: int = 30    # sparse BM25 candidates before fusion
+    KNOWLEDGE_DENSE_WEIGHT: float = 0.7 # weight for dense (semantic) results in RRF
+    KNOWLEDGE_SPARSE_WEIGHT: float = 0.3# weight for sparse (BM25) results in RRF
+    KNOWLEDGE_SCORE_THRESHOLD: float = 0.35  # minimum RRF score; results below are dropped
+
+    # Knowledge document directory structure (host-mounted volume)
+    KNOWLEDGE_BASE_DIR: str = "./data/knowledge"  # root
+    KNOWLEDGE_RAW_DIR: str = "./data/knowledge/raw"
+    KNOWLEDGE_PROCESSED_DIR: str = "./data/knowledge/processed"
+    KNOWLEDGE_FAILED_DIR: str = "./data/knowledge/failed"
+
+
+    # -------------------------------------------------------------------------
     # JWT Authentication
     # -------------------------------------------------------------------------
     JWT_SECRET: str = "CHANGE_ME_IN_PRODUCTION"
