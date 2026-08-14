@@ -109,7 +109,7 @@ async def sentinelx_exception_handler(
         "SentinelX exception",
         extra={
             "error_type": type(exc).__name__,
-            "message": exc.message,
+            "err_message": exc.message,
             "path": request.url.path,
             "method": request.method,
         },

@@ -3,17 +3,18 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Shield, Search, FileText,
   Settings, Activity, ChevronLeft, ChevronRight,
-  LogOut, Zap
+  LogOut, Zap, Upload, Globe, ShieldAlert, BarChart3
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/investigations', icon: Search, label: 'Investigations' },
-  { to: '/threats', icon: Shield, label: 'Threat Intel' },
-  { to: '/reports', icon: FileText, label: 'Reports' },
-  { to: '/status', icon: Activity, label: 'System Status' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/logs/upload',  icon: Upload,          label: 'Log Analysis' },
+  { to: '/iocs',         icon: Globe,           label: 'IOC Explorer' },
+  { to: '/incidents',    icon: ShieldAlert,      label: 'Incidents' },
+  { to: '/statistics',   icon: BarChart3,        label: 'Statistics' },
+  { to: '/status',       icon: Activity,        label: 'System Status' },
+  { to: '/settings',     icon: Settings,        label: 'Settings' },
 ]
 
 export default function Sidebar() {

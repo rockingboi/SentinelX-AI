@@ -98,9 +98,15 @@ async def init_db() -> None:
 async def _create_tables() -> None:
     """Create all tables defined in models (dev only). Production uses Alembic."""
     # Import models so Base.metadata knows about them
+    # ── Phase 1 models ────────────────────────────────────────────────────
     import backend.models.user  # noqa: F401
     import backend.models.role  # noqa: F401
     import backend.models.audit_log  # noqa: F401
+    # ── Phase 2 models ────────────────────────────────────────────────────
+    import backend.models.security_log   # noqa: F401
+    import backend.models.parsed_event   # noqa: F401
+    import backend.models.ioc_entity     # noqa: F401
+    import backend.models.incident_event  # noqa: F401
 
     assert _engine is not None
     async with _engine.begin() as conn:

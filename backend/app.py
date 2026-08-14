@@ -47,6 +47,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await init_neo4j()
     await init_qdrant()
 
+    # Seed default admin user on first boot
+    await _seed_admin()
+
     logger.info("✅ All services initialised. API is ready.")
 
     yield
@@ -61,8 +64,44 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 # =============================================================================
-# Application Factory
+# Admin User Seeder
 # =============================================================================
+
+async def _seed_admin() -> None:
+    """
+    Idempotently ensure the default admin user exists.
+    Safe to call on every startup — does nothing if the user already exists.
+    """
+    from databases.postgres import AsyncSessionLocal
+    from backend.repositories.user_repository import UserRepository
+    from backend.core.security import hash_password
+
+    async with AsyncSessionLocal() as session:
+        try:
+            repo = UserRepository(session)
+            existing = await repo.get_by_email("admin@sentinelx.ai")
+            if existing:
+                if existing.role != "admin":
+                    existing.role = "admin"
+                    await session.commit()
+                    logger.info("👑 Admin role promoted for admin@sentinelx.ai")
+                else:
+                    logger.info("👑 Admin user already exists — skipping seed")
+                return
+
+            await repo.create(
+                email="admin@sentinelx.ai",
+                username="admin",
+                hashed_password=hash_password("SentinelX@2025!"),
+                full_name="SentinelX Admin",
+                role="admin",
+            )
+            await session.commit()
+            logger.info("👑 Default admin user seeded: admin@sentinelx.ai / SentinelX@2025!")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Admin seed skipped: %s", exc)
+
+
 
 def create_app() -> FastAPI:
     """
@@ -121,13 +160,27 @@ def _register_routers(app: FastAPI) -> None:
     from backend.routes.auth import router as auth_router
     from backend.routes.dashboard import router as dashboard_router
 
+    # Phase 2 — Security Log Processing & NLP Engine
+    from backend.routes.logs import (
+        logs_router,
+        ioc_router,
+        incident_router,
+        stats_router,
+    )
+
     # Root + health (no version prefix)
     app.include_router(health_router, tags=["System"])
 
-    # Versioned API routes
+    # Versioned API routes — Phase 1
     v1_prefix = settings.API_V1_PREFIX
-    app.include_router(auth_router, prefix=f"{v1_prefix}/auth", tags=["Authentication"])
+    app.include_router(auth_router,      prefix=f"{v1_prefix}/auth",      tags=["Authentication"])
     app.include_router(dashboard_router, prefix=f"{v1_prefix}/dashboard", tags=["Dashboard"])
+
+    # Versioned API routes — Phase 2
+    app.include_router(logs_router,     prefix=f"{v1_prefix}/logs",       tags=["Security Logs"])
+    app.include_router(ioc_router,      prefix=f"{v1_prefix}/iocs",       tags=["IOC Intelligence"])
+    app.include_router(incident_router, prefix=f"{v1_prefix}/incidents",  tags=["Incidents"])
+    app.include_router(stats_router,    prefix=f"{v1_prefix}/statistics", tags=["Statistics"])
 
 
 def _configure_openapi(app: FastAPI) -> None:

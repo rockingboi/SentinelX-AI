@@ -7,28 +7,13 @@ import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
 import StatusPage from './pages/StatusPage'
 import NotFoundPage from './pages/NotFoundPage'
-import AppLayout from './components/layout/AppLayout'
-import { Shield } from 'lucide-react'
 
-// Placeholder page for future phases
-function ComingSoonPage({ title }) {
-  return (
-    <AppLayout>
-      <div className="flex flex-col items-center justify-center h-96 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20
-                        flex items-center justify-center mb-6">
-          <Shield className="w-8 h-8 text-cyan-400" />
-        </div>
-        <h1 className="text-xl font-bold text-slate-200 mb-2">{title}</h1>
-        <p className="text-slate-500 text-sm max-w-sm">
-          This module will be available in Phase 2 when AI agents are activated.
-        </p>
-        <div className="mt-4 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20
-                        text-xs text-cyan-400">Phase 2 — Coming soon</div>
-      </div>
-    </AppLayout>
-  )
-}
+// Phase 2 — Log Analysis pages
+import LogUploadPage from './pages/LogUploadPage'
+import LogViewerPage from './pages/LogViewerPage'
+import IOCExplorerPage from './pages/IOCExplorerPage'
+import IncidentPage from './pages/IncidentPage'
+import StatisticsPage from './pages/StatisticsPage'
 
 export default function App() {
   return (
@@ -36,10 +21,10 @@ export default function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login"    element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected routes */}
+          {/* Phase 1 — Core */}
           <Route path="/dashboard" element={
             <ProtectedRoute><DashboardPage /></ProtectedRoute>
           } />
@@ -50,15 +35,21 @@ export default function App() {
             <ProtectedRoute><SettingsPage /></ProtectedRoute>
           } />
 
-          {/* Placeholder routes for future phases */}
-          <Route path="/investigations" element={
-            <ProtectedRoute><ComingSoonPage title="Investigations" /></ProtectedRoute>
+          {/* Phase 2 — Log Analysis */}
+          <Route path="/logs/upload" element={
+            <ProtectedRoute><LogUploadPage /></ProtectedRoute>
           } />
-          <Route path="/threats" element={
-            <ProtectedRoute><ComingSoonPage title="Threat Intelligence" /></ProtectedRoute>
+          <Route path="/logs/:id" element={
+            <ProtectedRoute><LogViewerPage /></ProtectedRoute>
           } />
-          <Route path="/reports" element={
-            <ProtectedRoute><ComingSoonPage title="Reports" /></ProtectedRoute>
+          <Route path="/iocs" element={
+            <ProtectedRoute><IOCExplorerPage /></ProtectedRoute>
+          } />
+          <Route path="/incidents" element={
+            <ProtectedRoute><IncidentPage /></ProtectedRoute>
+          } />
+          <Route path="/statistics" element={
+            <ProtectedRoute><StatisticsPage /></ProtectedRoute>
           } />
 
           {/* Root redirect */}
