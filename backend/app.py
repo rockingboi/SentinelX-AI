@@ -50,6 +50,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Seed default admin user on first boot
     await _seed_admin()
 
+    # ── Phase 3 — Knowledge Intelligence Layer ──────────────────────────────
+    await _init_knowledge_layer()
+
     logger.info("✅ All services initialised. API is ready.")
 
     yield
@@ -101,6 +104,36 @@ async def _seed_admin() -> None:
         except Exception as exc:  # noqa: BLE001
             logger.warning("Admin seed skipped: %s", exc)
 
+
+
+# =============================================================================
+# Phase 3 — Knowledge Layer Initialisation
+# =============================================================================
+
+async def _init_knowledge_layer() -> None:
+    """
+    Initialise Phase 3 Knowledge Intelligence Layer at startup:
+    1. Ensure the Qdrant knowledge collection exists (idempotent)
+    2. Build the in-memory BM25 index from all currently indexed chunks
+
+    Both steps are best-effort: a failure logs a warning but does NOT abort
+    startup — the API remains available and retries can be triggered via
+    POST /api/v1/knowledge/index/rebuild.
+    """
+    try:
+        from vector_db.collections import ensure_knowledge_collection
+        await ensure_knowledge_collection()
+        logger.info("✅ Qdrant knowledge collection verified")
+    except Exception as exc:
+        logger.warning("⚠️  Knowledge collection setup failed: %s", exc)
+
+    try:
+        from rag.retrieval.bm25_index import get_bm25_index
+        bm25 = get_bm25_index()
+        count = await bm25.build()
+        logger.info("✅ BM25 index built with %d chunks", count)
+    except Exception as exc:
+        logger.warning("⚠️  BM25 index build failed: %s", exc)
 
 
 def create_app() -> FastAPI:
@@ -168,6 +201,9 @@ def _register_routers(app: FastAPI) -> None:
         stats_router,
     )
 
+    # Phase 3 — Knowledge Intelligence Layer
+    from backend.routes.knowledge import router as knowledge_router
+
     # Root + health (no version prefix)
     app.include_router(health_router, tags=["System"])
 
@@ -181,6 +217,9 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(ioc_router,      prefix=f"{v1_prefix}/iocs",       tags=["IOC Intelligence"])
     app.include_router(incident_router, prefix=f"{v1_prefix}/incidents",  tags=["Incidents"])
     app.include_router(stats_router,    prefix=f"{v1_prefix}/statistics", tags=["Statistics"])
+
+    # Versioned API routes — Phase 3
+    app.include_router(knowledge_router, prefix=f"{v1_prefix}/knowledge", tags=["Knowledge Intelligence"])
 
 
 def _configure_openapi(app: FastAPI) -> None:
