@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Shield, Search, FileText,
   Settings, Activity, ChevronLeft, ChevronRight,
-  LogOut, Zap, Upload, Globe, ShieldAlert, BarChart3
+  LogOut, Zap, Upload, Globe, ShieldAlert, BarChart3, BookOpen
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/iocs',         icon: Globe,           label: 'IOC Explorer' },
   { to: '/incidents',    icon: ShieldAlert,      label: 'Incidents' },
   { to: '/statistics',   icon: BarChart3,        label: 'Statistics' },
+  { to: '/knowledge',    icon: BookOpen,         label: 'Knowledge' },
   { to: '/status',       icon: Activity,        label: 'System Status' },
   { to: '/settings',     icon: Settings,        label: 'Settings' },
 ]

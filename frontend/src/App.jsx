@@ -15,6 +15,9 @@ import IOCExplorerPage from './pages/IOCExplorerPage'
 import IncidentPage from './pages/IncidentPage'
 import StatisticsPage from './pages/StatisticsPage'
 
+// Phase 3 — Knowledge Intelligence
+import KnowledgeSearchPage from './pages/KnowledgeSearchPage'
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -50,6 +53,11 @@ export default function App() {
           } />
           <Route path="/statistics" element={
             <ProtectedRoute><StatisticsPage /></ProtectedRoute>
+          } />
+
+          {/* Phase 3 — Knowledge Intelligence */}
+          <Route path="/knowledge" element={
+            <ProtectedRoute><KnowledgeSearchPage /></ProtectedRoute>
           } />
 
           {/* Root redirect */}

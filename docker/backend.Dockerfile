@@ -50,9 +50,14 @@ COPY --chown=appuser:appgroup databases/ ./databases/
 COPY --chown=appuser:appgroup graph_db/ ./graph_db/
 COPY --chown=appuser:appgroup vector_db/ ./vector_db/
 COPY --chown=appuser:appgroup security/ ./security/
+# Phase 3 — RAG / Knowledge Intelligence Layer
+COPY --chown=appuser:appgroup rag/ ./rag/
 
-# Create logs directory
-RUN mkdir -p /app/logs && chown appuser:appgroup /app/logs
+# Create logs directory and Phase 3 runtime dirs
+RUN mkdir -p /app/logs /data/knowledge/raw /data/knowledge/processed /data/knowledge/failed \
+    && chown -R appuser:appgroup /app/logs /data/knowledge
+# /models is mounted as a named Docker volume (sentinelx_models) at runtime
+# — do NOT pre-populate it in the image.
 
 # Switch to non-root user
 USER appuser

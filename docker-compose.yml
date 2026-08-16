@@ -14,6 +14,8 @@ volumes:
   neo4j_data:
   neo4j_logs:
   qdrant_data:
+  # Phase 3 — BGE embedding model weights (downloaded on first startup, persisted across restarts)
+  sentinelx_models:
 
 services:
 
@@ -105,7 +107,7 @@ services:
     networks:
       - sentinelx_net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:6333/ | grep -q 'title' || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:6333/healthz | grep -q 'ok' || wget -qO- http://localhost:6333/ | grep -q 'title' || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 8
@@ -127,6 +129,13 @@ services:
       REDIS_URL: redis://redis:6379/0
       NEO4J_URI: bolt://neo4j:7687
       QDRANT_URL: http://qdrant:6333
+      # Phase 3 — Knowledge Intelligence Layer
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-large-en-v1.5}
+      MODEL_CACHE_DIR: /models
+      QDRANT_KNOWLEDGE_COLLECTION: ${QDRANT_KNOWLEDGE_COLLECTION:-sentinelx_knowledge}
+      KNOWLEDGE_RAW_DIR: /data/knowledge/raw
+      KNOWLEDGE_PROCESSED_DIR: /data/knowledge/processed
+      KNOWLEDGE_FAILED_DIR: /data/knowledge/failed
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
@@ -135,6 +144,11 @@ services:
       - ./graph_db:/app/graph_db
       - ./vector_db:/app/vector_db
       - ./security:/app/security
+      - ./rag:/app/rag
+      # Phase 3 — BGE model weights (named volume, downloaded on first startup)
+      - sentinelx_models:/models
+      # Phase 3 — Knowledge documents (host-mounted, survives container restarts)
+      - ./data/knowledge:/data/knowledge
     depends_on:
       postgres:
         condition: service_healthy
@@ -143,7 +157,7 @@ services:
       neo4j:
         condition: service_started
       qdrant:
-        condition: service_started
+        condition: service_healthy
     networks:
       - sentinelx_net
     healthcheck:
@@ -151,7 +165,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   # ---------------------------------------------------------------------------
   # React Frontend
